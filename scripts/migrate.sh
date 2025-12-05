@@ -20,6 +20,7 @@ fi
 if ! command -v docker &> /dev/null || ! docker info &> /dev/null; then
   echo "Docker not available. Skipping edge functions deployment."
   echo "Deploy edge functions manually or via Supabase GitHub integration."
+  exit 0      
 else
   echo "Deploying edge functions..."
   SUPABASE_ACCESS_TOKEN="$SUPABASE_ACCESS_TOKEN" npx supabase functions deploy --project-ref nonxtltpvbjzvcqbgsle
@@ -27,4 +28,3 @@ else
 fi
 
 echo "=== Supabase deployment completed ==="
-
