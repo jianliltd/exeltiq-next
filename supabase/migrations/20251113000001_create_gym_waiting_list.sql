@@ -12,23 +12,20 @@ CREATE TABLE IF NOT EXISTS gym_waiting_list (
 );
 
 -- Add indexes for better query performance
-CREATE INDEX IF NOT EXISTS idx_gym_waiting_list_company_schedule ON gym_waiting_list(company_id, schedule_date, start_time);
-CREATE INDEX IF NOT EXISTS idx_gym_waiting_list_client ON gym_waiting_list(client_id);
-CREATE INDEX IF NOT EXISTS idx_gym_waiting_list_position ON gym_waiting_list(company_id, schedule_date, start_time, position);
+CREATE INDEX idx_gym_waiting_list_company_schedule ON gym_waiting_list(company_id, schedule_date, start_time);
+CREATE INDEX idx_gym_waiting_list_client ON gym_waiting_list(client_id);
+CREATE INDEX idx_gym_waiting_list_position ON gym_waiting_list(company_id, schedule_date, start_time, position);
 
 -- Enable RLS
 ALTER TABLE gym_waiting_list ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
-DROP POLICY IF EXISTS "Users can view waiting list entries for their company" ON gym_waiting_list;
 CREATE POLICY "Users can view waiting list entries for their company" ON gym_waiting_list
   FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Users can insert waiting list entries" ON gym_waiting_list;
 CREATE POLICY "Users can insert waiting list entries" ON gym_waiting_list
   FOR INSERT WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Users can delete their own waiting list entries" ON gym_waiting_list;
 CREATE POLICY "Users can delete their own waiting list entries" ON gym_waiting_list
   FOR DELETE USING (true);
 
@@ -51,8 +48,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to automatically update positions
-DROP TRIGGER IF EXISTS trigger_update_waiting_list_positions ON gym_waiting_list;
 CREATE TRIGGER trigger_update_waiting_list_positions
 AFTER DELETE ON gym_waiting_list
 FOR EACH ROW
 EXECUTE FUNCTION update_waiting_list_positions();
+

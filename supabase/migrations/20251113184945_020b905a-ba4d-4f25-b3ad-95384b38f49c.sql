@@ -1,7 +1,4 @@
--- This migration is a duplicate of 20251113000001_create_gym_waiting_list.sql
--- Making it idempotent to avoid errors on re-run
-
--- Create gym_waiting_list table (if not exists)
+-- Create gym_waiting_list table
 CREATE TABLE IF NOT EXISTS gym_waiting_list (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -14,24 +11,21 @@ CREATE TABLE IF NOT EXISTS gym_waiting_list (
   UNIQUE(company_id, client_id, schedule_date, start_time)
 );
 
--- Add indexes for better query performance (if not exists)
-CREATE INDEX IF NOT EXISTS idx_gym_waiting_list_company_schedule ON gym_waiting_list(company_id, schedule_date, start_time);
-CREATE INDEX IF NOT EXISTS idx_gym_waiting_list_client ON gym_waiting_list(client_id);
-CREATE INDEX IF NOT EXISTS idx_gym_waiting_list_position ON gym_waiting_list(company_id, schedule_date, start_time, position);
+-- Add indexes for better query performance
+CREATE INDEX idx_gym_waiting_list_company_schedule ON gym_waiting_list(company_id, schedule_date, start_time);
+CREATE INDEX idx_gym_waiting_list_client ON gym_waiting_list(client_id);
+CREATE INDEX idx_gym_waiting_list_position ON gym_waiting_list(company_id, schedule_date, start_time, position);
 
--- Enable RLS (safe to run multiple times)
+-- Enable RLS
 ALTER TABLE gym_waiting_list ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies (drop and recreate to be safe)
-DROP POLICY IF EXISTS "Users can view waiting list entries for their company" ON gym_waiting_list;
+-- RLS Policies
 CREATE POLICY "Users can view waiting list entries for their company" ON gym_waiting_list
   FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Users can insert waiting list entries" ON gym_waiting_list;
 CREATE POLICY "Users can insert waiting list entries" ON gym_waiting_list
   FOR INSERT WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Users can delete their own waiting list entries" ON gym_waiting_list;
 CREATE POLICY "Users can delete their own waiting list entries" ON gym_waiting_list
   FOR DELETE USING (true);
 
@@ -53,8 +47,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger to automatically update positions (drop and recreate to be safe)
-DROP TRIGGER IF EXISTS trigger_update_waiting_list_positions ON gym_waiting_list;
+-- Trigger to automatically update positions
 CREATE TRIGGER trigger_update_waiting_list_positions
 AFTER DELETE ON gym_waiting_list
 FOR EACH ROW
